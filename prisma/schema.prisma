@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  name             String
+  phone            String
+  email            String    @unique
+  password         String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now())
+  user_Type        UserType
+  homes            Home[]
+  buyer_messages   Message[] @relation("buyer_messages")
+  realtor_messages Message[] @relation("realtor_messages")
+}
+
+enum UserType {
+  BUYER
+  REALTOR
+  ADMIN
+}
+
+model Home {
+  id                 Int          @id @default(autoincrement())
+  address            String
+  number_of_rooms    Int
+  number_of_bathroom Float
+  city               String
+  listed_date        DateTime     @default(now())
+  price              Float
+  propertyType       PropertyType
+  land_size          Float
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @default(now())
+  images             Image[]
+  realtor_id         Int
+  realtor            User         @relation(fields: [realtor_id], references: [id])
+  messages           Message[]
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  CONDO
+}
+
+model Image {
+  id        Int      @id @default(autoincrement())
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  home_id   Int //forign key to Home
+  home      Home     @relation(fields: [home_id], references: [id])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  message    String
+  home_id    Int //forign key to Home
+  home       Home     @relation(fields: [home_id], references: [id])
+  realtor_id Int //forign key to User
+  realtor    User     @relation("realtor_messages", fields: [realtor_id], references: [id])
+  buyer_id   Int //forign key to User
+  buyer      User     @relation("buyer_messages", fields: [buyer_id], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+}
