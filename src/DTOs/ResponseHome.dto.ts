@@ -54,6 +54,8 @@ export class ResponseHomeDto {
   @Exclude()
   messages: any[];
 
+  realtors: any[];
+
   constructor(partial: Partial<ResponseHomeDto>) {
     Object.assign(this, partial);
   }

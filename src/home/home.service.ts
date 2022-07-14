@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PropertyType } from '@prisma/client';
+import { CreateHomeRequestDto } from 'src/DTOs/CreateHomeRequest.dto';
 import { ResponseHomeDto } from 'src/DTOs/ResponseHome.dto';
+import { UpdateHomeRequestDto } from 'src/DTOs/UpdateHome.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -50,5 +56,99 @@ export class HomeService {
 
       return new ResponseHomeDto(fetchedHome);
     });
+  }
+
+  async getHomeById(id: number): Promise<ResponseHomeDto> {
+    const home = await this.prisma.home.findUnique({
+      where: { id },
+      include: {
+        images: {
+          select: {
+            url: true,
+          },
+        },
+        realtor: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    if (!home) throw new NotFoundException('Home not found');
+
+    return new ResponseHomeDto(home);
+  }
+
+  async createHome({
+    city,
+    address,
+    price,
+    images,
+    land_size,
+    number_of_bathroom,
+    number_of_rooms,
+    propertyType,
+  }: CreateHomeRequestDto): Promise<any> {
+    console.log({
+      address,
+      city,
+      price,
+      propertyType,
+      number_of_bathroom,
+      number_of_rooms,
+      land_size,
+      realtor_id: 5,
+    });
+
+    const newHome = await this.prisma.home.create({
+      data: {
+        address,
+        city,
+        price,
+        propertyType,
+        number_of_bathroom,
+        number_of_rooms,
+        land_size,
+        realtor_id: 5,
+      },
+    });
+
+    await this.prisma.image.createMany({
+      data: images.map((image) => ({
+        ...image,
+        home_id: newHome.id,
+      })),
+    });
+
+    return new ResponseHomeDto(newHome);
+  }
+
+  async updateHomeById(
+    id: number,
+    home: UpdateHomeRequestDto,
+  ): Promise<ResponseHomeDto> {
+    const foundHome = await this.prisma.home.findUnique({ where: { id } });
+
+    if (!foundHome) throw new NotFoundException('Home by this id not found');
+
+    const updatedHome = await this.prisma.home.update({
+      where: { id },
+      data: { ...foundHome, ...home, updatedAt: new Date() },
+    });
+
+    return new ResponseHomeDto(updatedHome);
+  }
+
+  async deleteHomeById(id: number): Promise<any> {
+    const foundHome = await this.prisma.home.findUnique({ where: { id } });
+
+    if (!foundHome) throw new NotFoundException('Home by this id not found');
+
+    await this.prisma.image.deleteMany({ where: { home_id: id } });
+
+    return await this.prisma.home.delete({ where: { id } });
   }
 }
