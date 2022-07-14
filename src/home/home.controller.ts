@@ -10,7 +10,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Home, PropertyType } from '@prisma/client';
+import { PropertyType } from '@prisma/client';
 import { CreateHomeRequestDto } from 'src/DTOs/CreateHomeRequest.dto';
 import { ResponseHomeDto } from 'src/DTOs/ResponseHome.dto';
 import { UpdateHomeRequestDto } from 'src/DTOs/UpdateHome.dto';

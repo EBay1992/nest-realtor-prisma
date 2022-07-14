@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PropertyType } from '@prisma/client';
 import { CreateHomeRequestDto } from 'src/DTOs/CreateHomeRequest.dto';
 import { ResponseHomeDto } from 'src/DTOs/ResponseHome.dto';
