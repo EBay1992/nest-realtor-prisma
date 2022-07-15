@@ -9,7 +9,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { PropertyType, UserType } from '@prisma/client';
 import { Roles } from 'src/Decorators/Roles.decorator';
@@ -18,7 +17,6 @@ import { CreateHomeRequestDto } from 'src/DTOs/CreateHomeRequest.dto';
 import { InquireDto } from 'src/DTOs/Inquire.dto';
 import { ResponseHomeDto } from 'src/DTOs/ResponseHome.dto';
 import { UpdateHomeRequestDto } from 'src/DTOs/UpdateHome.dto';
-import { AuthGuard } from 'src/Guards/Auth.guard';
 import { UserPayloadInfo } from 'src/Interfaces/UserInfo.interface';
 import { HomeService } from './home.service';
 
