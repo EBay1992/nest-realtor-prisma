@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseEnumPipe,
   Post,
@@ -12,6 +13,8 @@ import { SignInDto } from 'src/DTOs/SignIn.dto';
 import { SignupDto } from 'src/DTOs/Signup.dto';
 import { AuthService } from './auth.service';
 import * as bcrypt from 'bcryptjs';
+import { User } from 'src/Decorators/User.decorator';
+import { UserPayloadInfo } from 'src/Interfaces/UserInfo.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -49,5 +52,10 @@ export class AuthController {
   @Post('/key')
   async generateProductKey(@Body() { userType, email }: GenerateProductKeyDto) {
     return this.authService.generateProductKey(email, userType);
+  }
+
+  @Get('/me')
+  me(@User() user: UserPayloadInfo) {
+    return this.authService.me(user);
   }
 }

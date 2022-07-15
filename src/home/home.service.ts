@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PropertyType } from '@prisma/client';
 import { CreateHomeRequestDto } from 'src/DTOs/CreateHomeRequest.dto';
 import { ResponseHomeDto } from 'src/DTOs/ResponseHome.dto';
 import { UpdateHomeRequestDto } from 'src/DTOs/UpdateHome.dto';
+import { UserPayloadInfo } from 'src/Interfaces/UserInfo.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -78,27 +83,19 @@ export class HomeService {
     return new ResponseHomeDto(home);
   }
 
-  async createHome({
-    city,
-    address,
-    price,
-    images,
-    land_size,
-    number_of_bathroom,
-    number_of_rooms,
-    propertyType,
-  }: CreateHomeRequestDto): Promise<any> {
-    console.log({
-      address,
+  async createHome(
+    {
       city,
+      address,
       price,
-      propertyType,
+      images,
+      land_size,
       number_of_bathroom,
       number_of_rooms,
-      land_size,
-      realtor_id: 5,
-    });
-
+      propertyType,
+    }: CreateHomeRequestDto,
+    user: UserPayloadInfo,
+  ): Promise<any> {
     const newHome = await this.prisma.home.create({
       data: {
         address,
@@ -108,7 +105,7 @@ export class HomeService {
         number_of_bathroom,
         number_of_rooms,
         land_size,
-        realtor_id: 5,
+        realtor_id: user.id,
       },
     });
 
@@ -125,8 +122,15 @@ export class HomeService {
   async updateHomeById(
     id: number,
     home: UpdateHomeRequestDto,
+    user: UserPayloadInfo,
   ): Promise<ResponseHomeDto> {
     const foundHome = await this.prisma.home.findUnique({ where: { id } });
+
+    if (foundHome && foundHome.realtor_id !== user.id) {
+      throw new UnauthorizedException(
+        'You are not authorized to update this home',
+      );
+    }
 
     if (!foundHome) throw new NotFoundException('Home by this id not found');
 
@@ -138,8 +142,14 @@ export class HomeService {
     return new ResponseHomeDto(updatedHome);
   }
 
-  async deleteHomeById(id: number): Promise<any> {
+  async deleteHomeById(id: number, user: UserPayloadInfo): Promise<any> {
     const foundHome = await this.prisma.home.findUnique({ where: { id } });
+
+    if (foundHome && foundHome.realtor_id !== user.id) {
+      throw new UnauthorizedException(
+        'You are not authorized to delete this home',
+      );
+    }
 
     if (!foundHome) throw new NotFoundException('Home by this id not found');
 
