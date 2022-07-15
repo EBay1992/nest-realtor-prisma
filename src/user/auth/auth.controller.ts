@@ -13,8 +13,8 @@ import { SignInDto } from 'src/DTOs/SignIn.dto';
 import { SignupDto } from 'src/DTOs/Signup.dto';
 import { AuthService } from './auth.service';
 import * as bcrypt from 'bcryptjs';
-import { User } from 'src/Decorators/User.decorator';
 import { UserPayloadInfo } from 'src/Interfaces/UserInfo.interface';
+import { User } from 'src/Decorators/User.decorator';
 
 @Controller('auth')
 export class AuthController {

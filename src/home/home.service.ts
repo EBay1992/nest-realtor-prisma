@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -156,5 +158,47 @@ export class HomeService {
     await this.prisma.image.deleteMany({ where: { home_id: id } });
 
     return await this.prisma.home.delete({ where: { id } });
+  }
+
+  async inquire(homeId: number, user: UserPayloadInfo, message: string) {
+    const searchedHome = await this.getHomeById(homeId);
+
+    return this.prisma.message.create({
+      data: {
+        message,
+        buyer_id: user.id,
+        home_id: homeId,
+        realtor_id: searchedHome.realtor_id,
+      },
+    });
+  }
+
+  async getMessagesByHome(homeId: number, user: UserPayloadInfo) {
+    const searchedHome = await this.getHomeById(homeId);
+
+    if (searchedHome.realtor_id !== user.id) {
+      throw new UnauthorizedException(
+        'You have not access to the messages of this home.',
+      );
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: { home_id: homeId, realtor_id: user.id },
+      select: {
+        message: true,
+        buyer: {
+          select: {
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!messages)
+      throw new NotFoundException('You have no inquires related to this home.');
+
+    return messages;
   }
 }
